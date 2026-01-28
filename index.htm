@@ -430,12 +430,12 @@
             background: radial-gradient(circle, transparent 40%, rgba(10, 5, 0, 0.95) 100%);
         }
 
-        /* --- POPUP PRE-SAVE --- */
+        /* --- POPUP PRE-SAVE (AGORA LANÇAMENTO) --- */
         #presave-popup {
             position: absolute;
             bottom: 30px;
             left: 30px;
-            width: 220px;
+            width: 240px; /* Ligeiramente mais largo para acomodar botões */
             background: rgba(20, 10, 5, 0.9);
             border: 1px solid #dcb386;
             padding: 20px;
@@ -512,6 +512,11 @@
             border: 1px solid #dcb386;
             transition: all 0.3s;
             box-sizing: border-box;
+            margin-bottom: 10px; /* Espaço entre botões */
+        }
+
+        .presave-btn:last-child {
+            margin-bottom: 0;
         }
 
         .presave-btn:hover {
@@ -902,7 +907,7 @@
             <a class="nav-item" data-target="fotos">FOTOS</a>
             <a class="nav-item" data-target="links">LINKS</a>
             <a class="nav-item" data-target="letras">LETRAS</a>
-            <a class="nav-item" href="https://tratore.ffm.to/dzrthrs3s1" target="_blank">PRE-SAVE</a>
+            <a class="nav-item" href="https://tratore.ffm.to/dzrthrs3s1" target="_blank">OUÇA AGORA</a>
         </div>
     </nav>
 
@@ -921,15 +926,18 @@
 
     <!-- POPUP PRE-SAVE (Home Only) -->
     <div id="presave-popup">
-        <div class="presave-sign-badge">PRE-SAVE</div>
-        <div class="presave-title">NOVA TRANSMISSÃO</div>
+        <div class="presave-sign-badge">NO AR</div>
+        <div class="presave-title">JÁ DISPONÍVEL</div>
         <div class="presave-desc">
             ARTISTA: DEZERT HORSE<br>
             FAIXA: NEM QUERIA VER O FIM<br>
-            FAÇA O PRE-SAVE AGORA
+            OUÇA AGORA
         </div>
         <a href="https://tratore.ffm.to/dzrthrs3s1" target="_blank" class="presave-btn">
-            ACESSAR LINK
+            OUÇA AGORA
+        </a>
+        <a href="https://www.youtube.com/@dezerthorse" target="_blank" class="presave-btn">
+            ASSISTIR CLIPE
         </a>
     </div>
 
@@ -1007,7 +1015,7 @@
             </details>
 
             <details class="song-block">
-                <summary>02 ONTEM FT GANWALK</summary>
+                <summary>02 ONTEM FT GANWALK (DEMO)</summary>
                 <div class="song-lyrics">
                     ontem eu pensava que o tempo não ia passar
                     que cada momento era eterno, mil segundos pelo ar
@@ -1615,7 +1623,7 @@
         }
 
         // --- ÁUDIO DO SISTEMA ---
-        const bgMusic = new Audio('https://raw.githubusercontent.com/DezertHorse/cavalo/main/realment%20loopada.mp3');
+        const bgMusic = new Audio('https://raw.githubusercontent.com/DezertHorse/cavalo/main/04%20nem%20querria%20ver%20o%20loop.mp3');
         bgMusic.loop = true;
         bgMusic.volume = 0; 
         bgMusic.crossOrigin = "anonymous"; 
@@ -2189,5 +2197,4 @@
 
     </script>
 </body>
-
 </html>
