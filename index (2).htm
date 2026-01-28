@@ -1,0 +1,2200 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEZERT HORSE | OFFICIAL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #150d05;
+            font-family: 'VT323', monospace;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            transition: filter 0.5s ease;
+        }
+
+        /* --- MENU DE NAVEGAÇÃO FLUTUANTE --- */
+        nav {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: transparent; 
+            border-bottom: none;      
+            z-index: 300;
+            padding: 0 40px;
+            box-sizing: border-box;
+            box-shadow: none;        
+            transition: all 0.3s;
+        }
+
+        .logo {
+            font-size: 32px;
+            color: #dcb386;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 15px rgba(220, 179, 134, 0.8); 
+            cursor: pointer;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px; 
+            align-items: center;
+        }
+
+        .nav-item {
+            color: #dcb386;
+            text-decoration: none;
+            font-size: 22px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            padding: 5px 0; 
+            transition: all 0.3s;
+            opacity: 0.7;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8); 
+        }
+
+        .nav-item:hover, .nav-item.active {
+            opacity: 1;
+            text-shadow: 0 0 15px #dcb386;
+            background: transparent; 
+        }
+
+        .nav-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #dcb386;
+            box-shadow: 0 0 10px #dcb386;
+        }
+
+        .nav-item.disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .nav-item.disabled:hover {
+            opacity: 1;
+            text-shadow: 0 0 5px #dcb386;
+        }
+
+        .nav-item.disabled:hover span {
+            display: none;
+        }
+        .nav-item.disabled:hover::before {
+            content: 'EM BREVE';
+            color: #8c6e50;
+        }
+
+        /* --- FOOTER DESKTOP --- */
+        .desktop-footer {
+            position: absolute;
+            bottom: 30px;
+            right: 40px;
+            text-align: right; 
+            color: #dcb386;
+            font-family: 'VT323', monospace;
+            font-size: 10px; 
+            letter-spacing: 1px;
+            opacity: 0.5; 
+            line-height: 1.4;
+            z-index: 20;
+            pointer-events: none; 
+            text-shadow: 0 0 2px rgba(0,0,0,0.5);
+        }
+
+        .desktop-footer a {
+            color: #dcb386;
+            text-decoration: none;
+            pointer-events: auto; 
+            transition: opacity 0.3s;
+        }
+        
+        .desktop-footer a:hover {
+            opacity: 1;
+            text-decoration: none; 
+            text-shadow: 0 0 5px #dcb386;
+        }
+
+        /* Elementos Mobile (Ocultos por padrão no Desktop) */
+        .mobile-menu-msg {
+            display: none;
+            width: 100%;
+            text-align: center;
+            color: #ffaa88;
+            border-bottom: 1px dashed #ffaa88;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            font-size: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .mobile-menu-msg:hover {
+            color: #ff4400;
+            text-shadow: 0 0 10px #ff4400;
+        }
+
+        .mobile-open-btn {
+            display: none;
+            background: none;
+            border: 1px solid #dcb386;
+            color: #dcb386;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            padding: 5px 15px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        /* --- TOOLTIP 3D (Camera Hint) --- */
+        .cam-tooltip {
+            position: absolute;
+            pointer-events: none;
+            z-index: 50;
+            display: flex;
+            opacity: 0; 
+            transition: opacity 1s ease;
+        }
+
+        .cam-marker {
+            width: 8px;
+            height: 8px;
+            background: #dcb386;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #dcb386;
+            position: relative;
+        }
+
+        .cam-line {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 60px;
+            height: 1px;
+            background: #dcb386;
+            transform-origin: 0 0;
+            transform: rotate(-45deg);
+        }
+
+        .cam-content {
+            position: absolute;
+            top: -50px;
+            left: 50px;
+            background: rgba(20, 10, 5, 0.8);
+            border: 1px solid #dcb386;
+            padding: 5px 10px;
+            color: #dcb386;
+            font-size: 14px;
+            white-space: nowrap;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(220, 179, 134, 0.2);
+        }
+
+        /* --- SECÇÕES DE CONTEÚDO --- */
+        .page-section {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            z-index: 250;
+            display: none;
+            overflow-y: auto;
+            background: rgba(21, 13, 5, 0.85);
+            backdrop-filter: blur(5px);
+            padding: 40px;
+            box-sizing: border-box;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .page-section.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        h1.section-title {
+            color: #dcb386;
+            font-size: 48px;
+            border-bottom: 2px dashed #dcb386;
+            padding-bottom: 10px;
+            margin-bottom: 40px;
+            text-align: center;
+            letter-spacing: 5px;
+        }
+
+        /* Fotos */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .photo-card {
+            background: #000;
+            border: 1px solid #dcb386;
+            aspect-ratio: 1 / 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #553311;
+            font-size: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s;
+            cursor: zoom-in;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px #dcb386;
+            color: #dcb386;
+        }
+
+        /* Lightbox Styles */
+        #lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            cursor: zoom-out;
+        }
+
+        #lightbox.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        #lightbox img {
+            max-width: 90%;
+            max-height: 90%;
+            border: 2px solid #dcb386;
+            box-shadow: 0 0 30px rgba(220, 179, 134, 0.3);
+        }
+
+        /* Links */
+        .links-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .link-item {
+            width: 100%;
+            padding: 20px;
+            border: 2px solid #dcb386;
+            color: #dcb386;
+            text-decoration: none;
+            font-size: 24px;
+            text-align: center;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            background: rgba(0,0,0,0.5);
+        }
+
+        .link-item:hover {
+            background: #dcb386;
+            color: #150d05;
+            box-shadow: 0 0 20px #dcb386;
+            letter-spacing: 2px;
+        }
+
+        /* Letras (Lyrics) Styles */
+        .lyrics-container {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .song-block {
+            border: 1px solid rgba(220, 179, 134, 0.3);
+            background: rgba(0,0,0,0.4);
+            margin-bottom: 5px;
+        }
+
+        .song-block summary {
+            padding: 15px;
+            cursor: pointer;
+            list-style: none;
+            font-size: 24px;
+            color: #dcb386;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .song-block summary:hover {
+            background: rgba(220, 179, 134, 0.1);
+            text-shadow: 0 0 5px #dcb386;
+        }
+
+        .song-block summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .song-block summary::after {
+            content: '+';
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .song-block[open] summary {
+            border-bottom: 1px dashed rgba(220, 179, 134, 0.3);
+            background: rgba(220, 179, 134, 0.05);
+        }
+
+        .song-block[open] summary::after {
+            content: '-';
+        }
+
+        .song-lyrics {
+            padding: 20px;
+            color: #dcb386;
+            font-size: 18px;
+            line-height: 1.6;
+            white-space: pre-line; /* Respeita quebras de linha do texto */
+            opacity: 0.9;
+            text-align: center;
+        }
+
+        .song-lyrics p { margin: 0; }
+
+
+        /* --- EFEITOS DE ECRÃ --- */
+        .dither-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="3" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noise)" opacity="0.15"/></svg>');
+            opacity: 0.15;
+            mix-blend-mode: overlay;
+        }
+
+        .vignette {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 6;
+            background: radial-gradient(circle, transparent 40%, rgba(10, 5, 0, 0.95) 100%);
+        }
+
+        /* --- POPUP PRE-SAVE (AGORA LANÇAMENTO) --- */
+        #presave-popup {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 240px; /* Ligeiramente mais largo para acomodar botões */
+            background: rgba(20, 10, 5, 0.9);
+            border: 1px solid #dcb386;
+            padding: 20px;
+            z-index: 150;
+            box-shadow: 0 0 20px rgba(220, 179, 134, 0.15);
+            color: #dcb386;
+            font-family: 'VT323', monospace;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s, transform 0.5s;
+            pointer-events: none;
+        }
+
+        #presave-popup.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* Letreiro PRE-SAVE */
+        .presave-sign-badge {
+            position: absolute;
+            top: -15px;
+            right: -10px;
+            background: #dcb386;
+            color: #150d05;
+            padding: 4px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transform: rotate(5deg);
+            box-shadow: 0 0 15px #dcb386;
+            border: 1px solid #150d05;
+            z-index: 10;
+            animation: flicker-sign 2s infinite alternate;
+        }
+
+        @keyframes flicker-sign {
+            0% { opacity: 1; text-shadow: 0 0 0 transparent; }
+            90% { opacity: 1; text-shadow: 0 0 0 transparent; }
+            92% { opacity: 0.5; text-shadow: 0 0 10px #fff; }
+            94% { opacity: 1; text-shadow: 0 0 0 transparent; }
+            96% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .presave-title {
+            font-size: 20px;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #dcb386;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+            animation: blink-text 2s infinite;
+        }
+
+        .presave-desc {
+            font-size: 16px;
+            margin-bottom: 15px;
+            line-height: 1.2;
+            opacity: 0.8;
+        }
+
+        .presave-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #dcb386;
+            color: #150d05;
+            text-align: center;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 18px;
+            border: 1px solid #dcb386;
+            transition: all 0.3s;
+            box-sizing: border-box;
+            margin-bottom: 10px; /* Espaço entre botões */
+        }
+
+        .presave-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .presave-btn:hover {
+            background: #150d05;
+            color: #dcb386;
+            box-shadow: 0 0 10px #dcb386;
+        }
+
+        @keyframes blink-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* --- HUD --- */
+        #hud {
+            position: absolute;
+            top: 80px; 
+            right: 20px;
+            width: 260px;
+            max-height: 85vh;
+            overflow-y: auto;
+            background: rgba(20, 10, 5, 0.9);
+            border: 1px solid #dcb386;
+            padding: 15px;
+            color: #dcb386;
+            z-index: 100;
+            box-shadow: 0 0 15px rgba(220, 179, 134, 0.1);
+            backdrop-filter: blur(4px);
+            scrollbar-width: thin;
+            scrollbar-color: #dcb386 #150d05;
+            
+            transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.4s;
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        #hud.collapsed {
+            transform: translateX(300px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #hud-toggle-btn {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            background: rgba(20, 10, 5, 0.8);
+            border: 1px solid #dcb386;
+            color: #dcb386;
+            padding: 10px 15px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 99;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px rgba(220, 179, 134, 0.2);
+            transition: opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #hud.collapsed ~ #hud-toggle-btn {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #dcb386;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 24px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #dcb386;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+        .close-btn:hover { color: #ff4400; }
+
+        .control-group {
+            margin-bottom: 18px;
+            border-bottom: 1px dotted rgba(220, 179, 134, 0.3);
+            padding-bottom: 10px;
+        }
+        .control-group:last-child { border-bottom: none; }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 18px;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #dcb386;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            height: 4px;
+            border-radius: 2px;
+            appearance: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: #dcb386;
+            cursor: pointer;
+            border-radius: 0;
+        }
+
+        button.control-btn {
+            width: 100%;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid #dcb386;
+            color: #dcb386;
+            padding: 8px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        button.control-btn:hover {
+            background: #dcb386;
+            color: #150d05;
+            box-shadow: 0 0 10px #dcb386;
+        }
+
+        button.control-btn.active {
+            background: #dcb386;
+            color: #150d05;
+            box-shadow: 0 0 5px #dcb386 inset;
+        }
+
+        .data-stream {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 10px;
+            height: 60px;
+            overflow: hidden;
+            border: 1px solid #dcb386;
+            padding: 5px;
+            background: rgba(0,0,0,0.5);
+            font-family: monospace;
+            line-height: 1.2;
+        }
+
+        /* --- TELA DE CARREGAMENTO FAKE --- */
+        #loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #150d05;
+            color: #dcb386;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            transition: opacity 1s ease-out;
+        }
+        
+        #loading-text {
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            animation: blink 0.5s infinite alternate;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 10px;
+            border: 1px solid #dcb386;
+            padding: 2px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #dcb386;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        #start-btn {
+            margin-top: 30px;
+            background: transparent;
+            border: 2px solid #dcb386;
+            color: #dcb386;
+            padding: 15px 30px;
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            animation: pulse-btn-border 2s infinite;
+            display: none;
+        }
+
+        #start-btn:hover {
+            background: #dcb386;
+            color: #150d05;
+            box-shadow: 0 0 20px #dcb386;
+        }
+
+        @keyframes blink {
+            from { opacity: 1; }
+            to { opacity: 0.7; }
+        }
+
+        @keyframes pulse-btn-border {
+            0% { box-shadow: 0 0 0 rgba(220, 179, 134, 0); }
+            50% { box-shadow: 0 0 15px rgba(220, 179, 134, 0.5); }
+            100% { box-shadow: 0 0 0 rgba(220, 179, 134, 0); }
+        }
+
+        .hidden { opacity: 0 !important; pointer-events: none; }
+
+        /* --- MEDIA QUERIES PARA RESPONSIVIDADE --- */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: row; /* Começa como linha no mobile (Logo - Botão) */
+                height: 80px; /* Altura padrão fechada */
+                padding: 0 20px;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+                align-items: center;
+                overflow: hidden; /* Esconde links quando fechado */
+            }
+
+            .logo {
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            /* Botão de abrir menu (visível apenas no mobile fechado) */
+            .mobile-open-btn {
+                display: block;
+            }
+
+            .nav-links {
+                display: none; /* Links escondidos por padrão no mobile */
+                width: 100%;
+                flex-direction: column;
+                margin-top: 20px;
+                gap: 20px;
+            }
+
+            .nav-item {
+                font-size: 24px;
+                width: 100%;
+                text-align: center;
+                padding: 10px 0;
+            }
+
+            /* Ocultar footer desktop no mobile */
+            .desktop-footer {
+                display: none;
+            }
+
+            /* ESTADO ABERTO DO MENU MOBILE */
+            nav.mobile-open {
+                height: 100vh; /* Ocupa tela toda */
+                flex-direction: column; /* Pilha vertical */
+                justify-content: flex-start;
+                background: rgba(21, 13, 5, 0.98); /* Fundo sólido */
+                padding-top: 40px;
+            }
+
+            nav.mobile-open .logo {
+                margin-bottom: 20px;
+                order: 2; /* Logo abaixo da mensagem */
+            }
+
+            nav.mobile-open .mobile-open-btn {
+                display: none; /* Esconde botão de abrir */
+            }
+
+            nav.mobile-open .mobile-menu-msg {
+                display: block; /* Mostra botão de fechar */
+                order: 1; /* Mensagem no topo */
+            }
+
+            nav.mobile-open .nav-links {
+                display: flex; /* Mostra links */
+                order: 3;
+            }
+            
+            .page-section {
+                top: 80px; 
+                height: calc(100vh - 80px);
+                padding: 20px;
+            }
+            
+            h1.section-title {
+                font-size: 32px;
+                margin-bottom: 20px;
+            }
+
+            /* HUD centralizado e menor no mobile */
+            #hud {
+                width: 90%;
+                left: 50%;
+                right: auto;
+                top: 100px;
+                transition: transform 0.4s ease, opacity 0.4s;
+                transform: translateX(-50%); 
+            }
+            
+            #hud.collapsed {
+                transform: translateX(-50%) translateY(-20px);
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            #hud-toggle-btn {
+                top: 90px;
+                right: 10px;
+                font-size: 14px;
+                padding: 5px 10px;
+            }
+
+            /* Centralizar Popup de Pre-save no mobile */
+            #presave-popup {
+                left: 50%;
+                bottom: 20px;
+                width: 85%;
+                margin: 0;
+                transform: translateX(-50%); 
+                transition: opacity 0.3s, transform 0.3s;
+            }
+            #presave-popup.visible {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+
+            /* REGRA CRUCIAL: Esconder Pre-save se menu mobile estiver aberto */
+            nav.mobile-open ~ #presave-popup {
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transform: translateX(-50%) translateY(20px) !important;
+            }
+        }
+
+    </style>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <!-- Navegação -->
+    <nav id="main-nav">
+        <!-- Controle Mobile: Mensagem de Fechar (Visível só quando aberto) -->
+        <div class="mobile-menu-msg" id="mobile-close-btn">FECHAR MENU [ × ]</div>
+
+        <div class="logo">DEZERT HORSE</div>
+        
+        <!-- Controle Mobile: Botão Menu (Visível só quando fechado no mobile) -->
+        <button class="mobile-open-btn" id="mobile-open-btn">MENU</button>
+
+        <div class="nav-links">
+            <a class="nav-item active" data-target="home">HOME</a>
+            <a class="nav-item" data-target="fotos">FOTOS</a>
+            <a class="nav-item" data-target="links">LINKS</a>
+            <a class="nav-item" data-target="letras">LETRAS</a>
+            <a class="nav-item" href="https://tratore.ffm.to/dzrthrs3s1" target="_blank">OUÇA AGORA</a>
+        </div>
+    </nav>
+
+    <!-- Tela de Carregamento -->
+    <div id="loading-screen">
+        <div id="loading-text">INICIALIZANDO SISTEMA...</div>
+        <div class="progress-bar" id="progress-container">
+            <div class="progress-fill" id="progress-fill"></div>
+        </div>
+        <button id="start-btn">INICIAR TRANSMISSÃO</button>
+    </div>
+    
+    <div id="canvas-container"></div>
+    <div class="dither-overlay"></div>
+    <div class="vignette"></div>
+
+    <!-- POPUP PRE-SAVE (Home Only) -->
+    <div id="presave-popup">
+        <div class="presave-sign-badge">NO AR</div>
+        <div class="presave-title">JÁ DISPONÍVEL</div>
+        <div class="presave-desc">
+            ARTISTA: DEZERT HORSE<br>
+            FAIXA: NEM QUERIA VER O FIM<br>
+            OUÇA AGORA
+        </div>
+        <a href="https://tratore.ffm.to/dzrthrs3s1" target="_blank" class="presave-btn">
+            OUÇA AGORA
+        </a>
+        <a href="https://www.youtube.com/@dezerthorse" target="_blank" class="presave-btn">
+            ASSISTIR CLIPE
+        </a>
+    </div>
+
+    <!-- FOOTER DESKTOP -->
+    <div class="desktop-footer">
+        © 2026 // Dezert Horse - <a href="https://instagram.com/ganwalk" target="_blank">Site imaginado por @ganwalk</a>
+    </div>
+
+    <!-- SEÇÃO FOTOS -->
+    <div id="section-fotos" class="page-section">
+        <h1 class="section-title">ARQUIVOS VISUAIS</h1>
+        <div class="photo-grid">
+            <div class="photo-card" onclick="openLightbox(this)">
+                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6248.JPG" alt="Gallery Image 1">
+            </div>
+            <div class="photo-card" onclick="openLightbox(this)">
+                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6258.JPG" alt="Gallery Image 2">
+            </div>
+            <div class="photo-card" onclick="openLightbox(this)">
+                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6265.JPG" alt="Gallery Image 3">
+            </div>
+            <div class="photo-card" onclick="openLightbox(this)">
+                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6263.JPG" alt="Gallery Image 4">
+            </div>
+            <div class="photo-card" onclick="openLightbox(this)">
+                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6252%20(2).JPG" alt="Gallery Image 5">
+            </div>
+            <div class="photo-card" onclick="openLightbox(this)">
+                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/1.JPG" alt="Gallery Image 6">
+            </div>
+        </div>
+    </div>
+
+    <!-- LIGHTBOX -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <img id="lightbox-img" src="" alt="Full Screen Image">
+    </div>
+
+    <!-- SEÇÃO LINKS -->
+    <div id="section-links" class="page-section">
+        <h1 class="section-title">CONEXÕES DE REDE</h1>
+        <div class="links-container">
+            <a href="https://open.spotify.com/intl-pt/artist/1a03S9PeaoDA6rGJgUJRFD?si=ZuTI7I0OTIyWfxw92DcYqg" target="_blank" class="link-item">SPOTIFY</a>
+            <a href="https://music.apple.com/br/artist/dezert-horse/1517299181?l=en-GB" target="_blank" class="link-item">APPLE MUSIC</a>
+            <a href="https://www.youtube.com/@dezerthorse" target="_blank" class="link-item">YOUTUBE</a>
+            <a href="http://dezerthorse1.bandcamp.com/album/dezert-horse" target="_blank" class="link-item">BANDCAMP</a>
+            <a href="https://www.instagram.com/dezerthorse" target="_blank" class="link-item">INSTAGRAM</a>
+            <a href="https://www.threads.com/@dezerthorse" target="_blank" class="link-item">THREADS</a>
+            <a href="mailto:dezerthorse@gmail.com" class="link-item">CONTATO</a>
+        </div>
+    </div>
+
+    <!-- SEÇÃO LETRAS -->
+    <div id="section-letras" class="page-section">
+        <h1 class="section-title">ARQUIVOS DE TEXTO</h1>
+        <div class="lyrics-container">
+            
+            <details class="song-block">
+                <summary>01 EU PENSO NO TEMPO</summary>
+                <div class="song-lyrics">
+                    tempo eu penso no tempo e ele nem vem mais
+                    ora, não passam as horas e olham pra trás
+                    tento, mas nem vejo o tempo quando ele passa
+                    e se um dia eu acordar e não te ver lá?
+                    
+                    agoniado, às vezes penso no passado
+                    eu lembro o que eu pensava de mim mesmo
+                    e cada vez eu vejo, mais longe do desejo
+                    incerto de tudo
+                    
+                    tanto tento, que passa o tempo, nem vejo
+                    adeus criança do passado, um beijo
+                    eu nunca vou voltar, talvez eu preciso respirar.
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>02 ONTEM FT GANWALK (DEMO)</summary>
+                <div class="song-lyrics">
+                    ontem eu pensava que o tempo não ia passar
+                    que cada momento era eterno, mil segundos pelo ar
+                    penso o quanto me fez bem, mas não quero entender
+                    longe de onde hoje, sei que tenho
+                    o que eu vi acontecer
+                    
+                    uma noite, um momento, um sinal
+                    não podiam me fazer mal
+                    quanto tempo eu levo pra esquecer
+                    de você?
+                    
+                    ontem eu pensava até no que eu fiz pra me esquecer
+                    tudo que eu acho que eu já vi, eu nem comecei a ver
+                    lembro tanto de você, sei que nem pensa em mim
+                    e mesmo se eu falasse o que eu penso
+                    não mudaria meu fim
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>03 AMANHÃ FT CARABOBINA</summary>
+                <div class="song-lyrics">
+                    me entregue al sentimiento
+                    que todo va a pasar
+                    pero mi discernimiento me alerto que no da pra controlar
+                    mucho menos esperar
+                    porque mientras esperamos, todo todo sale del lugar
+                    
+                    o amanhã vai passar
+                    não vou ver nem lembrar
+                    se é que um dia eu vi
+                    já nem sei onde vai dar
+                    
+                    aprender é
+                    deixar pro destino, eu vou
+                    além
+                    desistir é
+                    nojo que sinto, eu sei
+                    não faz bem
+                    
+                    tudo passa
+                    todo mundo morre e eu sei
+                    vou também
+                    tudo passa
+                    vou também
+                    
+                    o amanhã vai passar
+                    não vou ver nem lembrar
+                    se é que um dia eu vi
+                    já nem sei onde vai dar
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>04 NEM QUERIA VER O FIM</summary>
+                <div class="song-lyrics">
+                    de novo aqui
+                    olha como o tempo passa
+                    nem sei começar
+                    planos são
+                    incerteza e ilusão
+                    e eu nem posso reclamar de nada
+                    
+                    como eu nem queria ver o fim
+                    e ver que dentro de mim tem nada
+                    de novo aqui
+                    olha como o mundo muda
+                    eu nem sei falar
+                    como eu nem queria ver o fim
+                    e ver que dentro de mim tem água
+                    
+                    planos são
+                    incerteza e ilusão
+                    e eu nem posso reclamar de nada
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>05 IF ONLY I KNEW</summary>
+                <div class="song-lyrics">
+                    if only i knew
+                    if i could read your mind
+                    turn back time
+                    if only time could pass
+                    i never know the time
+                    waves crashing in your eyes
+                    i only found a way
+                    if only i knew
+                    fine
+                    i'll just be alright
+                    
+                    if all the stars were bright
+                    gazing at the sky
+                    clouds, phasing through your eyes
+                    i only found a way
+                    if only i knew
+                    fine
+                    i'll just be alright
+                    
+                    if all the walls could fall
+                    no it is not your fault
+                    time travels in my mind
+                    and i
+                    i only found a way
+                    if only i knew
+                    fine
+                    i'll just be alright
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>06 I'M ONTO BIGGER THINGS</summary>
+                <div class="song-lyrics">
+                    I'm onto bigger things
+                    You would not even know how delusional I am
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>07 RUFIÃO (RAPHAEL VAZ)</summary>
+                <div class="song-lyrics">
+                    se a luz ofuscar
+                    é que os olhos querem
+                    nos montes de Vênus
+                    cores escurecem
+                    e hoje amarelou
+                    tanto tempo atoa
+                    vai demorar
+                    outra festa boa
+                    
+                    e a saudade quente
+                    mora na memória
+                    sem desmanchar
+                    monta outra história
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>08 SILÊNCIO CÓSMICO</summary>
+                <div class="song-lyrics">
+                    nao tem por que
+                    falar
+                    se me ouvissem
+                    silêncio cósmico
+                    
+                    nao tem por que
+                    chorar
+                    por que eu não sinto
+                    tristeza sólida
+                    
+                    nao tem por que
+                    correr
+                    se seu destino é
+                    piscar de olhos
+                    
+                    nao tem por que
+                    falar
+                    se me ouvissem
+                    silêncio cósmico
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>09 ATÉ ONDE?</summary>
+                <div class="song-lyrics">
+                    de tanto falar pra escutar
+                    em meu ouvido só silêncio
+                    me fala até onde isso quer chegar?
+                    até onde esse barco vai?
+                    
+                    num mar vazio eterno como o céu
+                    de longe eu vejo um vendaval
+                    de tanto esperar isso passar
+                    por dentro eu entendo que não importa aonde isso tudo vai chegar
+                    
+                    me diz onde esconder
+                    ou talvez eu possa ficar
+                    me diz como entender
+                    todas voltas que o mundo dá
+                    
+                    e eu queria poder falar
+                    mas nem é cedo ainda
+                    talvez eu deva acordar
+                    sonhei vivo demais
+                    
+                    é tão estranho sentir
+                    não tem pra que fingir
+                    nem queria falar
+                    só queria te ouvir
+                    
+                    é estranho eu dizer
+                    que eu vim só pra te ver?
+                    mesmo estando aqui
+                    antes de você
+                    e sem saber
+                    
+                    e pra falar a real
+                    sem ser nada poético
+                    mas o que bateu nem foi o...
+                    sentido ao novo
+                    eu não aguento ouvir merda
+                    e eu fico sem graça de falar na sua cara
+                    
+                    eu já nem sei
+                    Quem sou eu
+                    quem é você?
+                    isso nem faz mal
+                    se eu não
+                    vai doer
+                </div>
+            </details>
+
+            <details class="song-block">
+                <summary>10 REALMENTE ÓBVIO</summary>
+                <div class="song-lyrics">
+                    e esse vento lá fora
+                    me fez vir embora
+                    já faz um tempo que eu lembro
+                    de coisas vivas ao sonhar
+                    
+                    eu queria você
+                    é difícil me ver?
+                    não basta essa poeira
+                    eu só penso em você!
+                    
+                    eu queria te ver
+                    é difícil ser?
+                    se souber não tem volta
+                    às vezes tento te mostrar
+                    mas é meio óbvio
+                    realmente óbvio
+                    
+                    and these feelings about you
+                    I'll have to find a way to go on without them
+                    it only makes it harder
+                    so I'll push it over far
+                    'till it won't remind me that
+                    I'll have to find a way
+                    it only makes it harder
+                    so I'll have to find a way
+                    without you
+                </div>
+            </details>
+
+        </div>
+    </div>
+
+    <!-- HUD INTERATIVO (Home Only) -->
+    <div id="hud" class="collapsed">
+        <div class="hud-header">
+            <h2>Painel de Controlo</h2>
+            <button class="close-btn" id="close-hud-btn">×</button>
+        </div>
+        
+        <div class="control-group">
+            <label>Velocidade Trote <span id="speed-val">100%</span></label>
+            <input type="range" id="speed-slider" min="0" max="200" value="100">
+        </div>
+
+        <div class="control-group">
+            <label>Estrutura de Dados</label>
+            <input type="range" id="structure-slider" min="0" max="100" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>Alongamento Surreal</label>
+            <input type="range" id="stretch-slider" min="0" max="100" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>Distorção Lente (FOV)</label>
+            <input type="range" id="fov-slider" min="20" max="120" value="40">
+        </div>
+
+        <div class="control-group">
+            <button id="ghost-btn" class="control-btn">MODO ESPECTRO [OFF]</button>
+        </div>
+
+        <div class="data-stream" id="console-log">
+            > CONECTANDO AO SERVIDOR...<br>
+        </div>
+    </div>
+
+    <!-- Botão para reabrir o HUD -->
+    <button id="hud-toggle-btn">SISTEMA [ + ]</button>
+
+    <!-- Tooltip Câmera -->
+    <div id="cam-tooltip" class="cam-tooltip">
+        <div class="cam-marker"></div>
+        <div class="cam-line"></div>
+        <div class="cam-content">GIRAR CÂMERA [ ARRASTE ]</div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- ESTADO GLOBAL ---
+        const state = {
+            speed: 32,
+            baseSpeed: 32,
+            stretch: 0, 
+            ghostMode: false, 
+            structure: 0.0, // Wireframe Opacity & Expansion
+            structureInteracted: false,
+            cameraInteracted: false, // Flag para controle da tooltip
+            time: 0,
+            loaded: false,
+            introFinished: false,
+            modelReady: false
+        };
+
+        // --- DOM Elements ---
+        const loadingScreen = document.getElementById('loading-screen');
+        const progressFill = document.getElementById('progress-fill');
+        const progressContainer = document.getElementById('progress-container');
+        const loadingText = document.getElementById('loading-text');
+        const startBtn = document.getElementById('start-btn');
+        
+        const hud = document.getElementById('hud');
+        const hudToggleBtn = document.getElementById('hud-toggle-btn');
+        const closeHudBtn = document.getElementById('close-hud-btn');
+        const consoleLog = document.getElementById('console-log');
+        const canvasContainer = document.getElementById('canvas-container');
+        const presavePopup = document.getElementById('presave-popup');
+        const camTooltip = document.getElementById('cam-tooltip');
+
+        // Navigation Elements
+        const nav = document.getElementById('main-nav');
+        const navLinks = document.querySelectorAll('.nav-item');
+        const sections = document.querySelectorAll('.page-section');
+        const mobileOpenBtn = document.getElementById('mobile-open-btn');
+        const mobileCloseBtn = document.getElementById('mobile-close-btn');
+
+        // Lightbox Logic
+        window.openLightbox = function(card) {
+            const imgSrc = card.querySelector('img').src;
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImg = document.getElementById('lightbox-img');
+            lightboxImg.src = imgSrc;
+            lightbox.classList.add('active');
+        };
+
+        window.closeLightbox = function() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+        };
+
+        // --- NAVEGAÇÃO SPA & FILTRO DE AUDIO ---
+        // Audio Filter State
+        let audioContext = null;
+        let audioSource = null;
+        let menuFilter = null; // Renamed for clarity (Muffles when in menu)
+        
+        // Fov Filters (Dual Stage for Clean Start)
+        let fovFilterHigh = null; // Highpass (Corta graves)
+        let fovFilterLow = null;  // Lowpass (Corta agudos)
+        
+        let audioAnalyser = null;
+        let distortionNode = null; // Overdrive Node (Stretch)
+        let isAudioInit = false;
+
+        function initAudio() {
+            if(isAudioInit) return;
+            
+            try {
+                // Initialize Web Audio API
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioContext = new AudioContext();
+                
+                // Set up source node from the existing audio element
+                audioSource = audioContext.createMediaElementSource(bgMusic);
+                
+                // Create Filters
+                
+                // 1. Distortion (Overdrive) - Controlled by Stretch Slider
+                distortionNode = audioContext.createWaveShaper();
+                distortionNode.curve = makeDistortionCurve(0);
+                distortionNode.oversample = '4x';
+
+                // 2. FOV Filters (Series: Highpass + Lowpass)
+                // Inicializa totalmente aberto (SOM LIMPO)
+                fovFilterHigh = audioContext.createBiquadFilter();
+                fovFilterHigh.type = "highpass";
+                fovFilterHigh.frequency.value = 20; // Deixa passar tudo acima de 20Hz
+                fovFilterHigh.Q.value = 0.7;
+
+                fovFilterLow = audioContext.createBiquadFilter();
+                fovFilterLow.type = "lowpass";
+                fovFilterLow.frequency.value = 22000; // Deixa passar tudo abaixo de 22kHz
+                fovFilterLow.Q.value = 0.7;
+
+                // 3. Menu Filter (Muffle/Lowpass) - Controlled by Navigation (Only for page switch)
+                menuFilter = audioContext.createBiquadFilter();
+                menuFilter.type = "lowpass";
+                menuFilter.frequency.value = 20000; // Start open
+                menuFilter.Q.value = 1; 
+
+                // Analyser
+                audioAnalyser = audioContext.createAnalyser();
+                audioAnalyser.fftSize = 512;
+
+                // Connect graph: Source -> Distortion -> FovHigh -> FovLow -> MenuFilter -> Analyser -> Destination
+                audioSource.connect(distortionNode);
+                distortionNode.connect(fovFilterHigh);
+                fovFilterHigh.connect(fovFilterLow);
+                fovFilterLow.connect(menuFilter);
+                menuFilter.connect(audioAnalyser);
+                audioAnalyser.connect(audioContext.destination);
+                
+                isAudioInit = true;
+                console.log("Audio Context Initialized");
+                
+                // Ensure initial states (Passa o valor padrão 40)
+                updateOverdrive();
+                updateFovAudio(40); 
+            } catch(e) {
+                console.error("Web Audio API not supported or error:", e);
+            }
+        }
+
+        // Helper to generate distortion curve
+        function makeDistortionCurve(amount) {
+            const k = typeof amount === 'number' ? amount : 0;
+            const n_samples = 44100;
+            const curve = new Float32Array(n_samples);
+            const deg = Math.PI / 180;
+            for (let i = 0; i < n_samples; ++i) {
+                const x = i * 2 / n_samples - 1;
+                if (k < 1) {
+                    curve[i] = x;
+                } else {
+                    curve[i] = (3 + k) * x * 20 * deg / (Math.PI + k * Math.abs(x));
+                }
+            }
+            return curve;
+        }
+
+        function updateOverdrive() {
+            if (!distortionNode) return;
+            const amount = state.stretch * 400;
+            distortionNode.curve = makeDistortionCurve(amount);
+        }
+
+        // Update Audio based on FOV Slider (20 - 120)
+        // Lógica: 40 é o "Normal/Limpo". Acima de 40 começa a filtrar para focar nos médios.
+        function updateFovAudio(val) {
+            if (!fovFilterHigh || !fovFilterLow || !audioContext) return;
+            
+            // Normaliza apenas a parte de "efeito" (40 até 120).
+            // Se val <= 40, t = 0 (Efeito Zerado).
+            const t = Math.max(0, (val - 40) / 80); 
+            
+            const currentTime = audioContext.currentTime;
+            
+            // Frequências Alvo para Efeito Máximo (t=1):
+            // HP sobe para ~700Hz (Corta graves e sub-graves)
+            // LP desce para ~3000Hz (Corta brilho e chiado agudo)
+            // Resultado: Foco na voz e médios (Rádio/Telefone)
+            
+            const hpFreq = 20 + (Math.pow(t, 2) * 700); // Curva exponencial para suavidade
+            const lpFreq = 22000 * Math.pow(0.15, t);   // Decaimento exponencial 22k -> ~3.3k
+
+            fovFilterHigh.frequency.setTargetAtTime(hpFreq, currentTime, 0.1);
+            fovFilterLow.frequency.setTargetAtTime(lpFreq, currentTime, 0.1);
+            
+            // Aumenta levemente a ressonância (Q) conforme o efeito aperta para "colorir" o som
+            const q = 0.7 + (t * 0.8);
+            fovFilterHigh.Q.setTargetAtTime(q, currentTime, 0.1);
+            fovFilterLow.Q.setTargetAtTime(q, currentTime, 0.1);
+        }
+
+        // Apply Muffled Effect (Menu Navigation)
+        function applyMuffle(enable) {
+            if(!menuFilter) return;
+
+            const currentTime = audioContext.currentTime;
+            if(enable) {
+                menuFilter.frequency.cancelScheduledValues(currentTime);
+                menuFilter.frequency.exponentialRampToValueAtTime(600, currentTime + 0.5);
+            } else {
+                menuFilter.frequency.cancelScheduledValues(currentTime);
+                menuFilter.frequency.exponentialRampToValueAtTime(20000, currentTime + 0.5);
+            }
+        }
+
+        // Toggle HUD logic (Refatorada para Mobile First Logic)
+        function toggleHud(open) {
+            // 1. Estado do HUD
+            if (open) {
+                hud.classList.remove('collapsed');
+                log("PAINEL EXPANDIDO");
+            } else {
+                hud.classList.add('collapsed');
+            }
+
+            // 2. Lógica Responsiva (Mobile vs Desktop)
+            const isMobile = window.innerWidth <= 768;
+            
+            if (isMobile) {
+                // Mobile: Comportamento Exclusivo (Ou HUD ou Pre-save)
+                if (open) {
+                    // Se abriu HUD, esconde Pre-save
+                    presavePopup.classList.remove('visible');
+                } else {
+                    // Se fechou HUD, mostra Pre-save (se estiver na Home)
+                    const isHome = !document.querySelector('.page-section.visible');
+                    if (isHome && state.introFinished) {
+                        presavePopup.classList.add('visible');
+                    }
+                }
+            } else {
+                // Desktop: Podem coexistir, mas garantimos que o Pre-save esteja visível na Home
+                const isHome = !document.querySelector('.page-section.visible');
+                if (isHome && state.introFinished) {
+                    presavePopup.classList.add('visible');
+                }
+            }
+        }
+
+        // Mobile Menu Logic
+        function toggleMobileMenu(forceClose = false) {
+            if (forceClose) {
+                nav.classList.remove('mobile-open');
+            } else {
+                nav.classList.toggle('mobile-open');
+            }
+        }
+
+        mobileOpenBtn.addEventListener('click', () => toggleMobileMenu());
+        mobileCloseBtn.addEventListener('click', () => toggleMobileMenu());
+
+        navLinks.forEach(link => {
+            if (link.classList.contains('disabled')) return;
+            // Ignora links externos na lógica de SPA, mas fecha o menu se estiver aberto
+            if (link.tagName === 'A' && link.getAttribute('href')) {
+                link.addEventListener('click', () => toggleMobileMenu(true));
+                return;
+            }
+
+            link.addEventListener('click', () => {
+                navLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                const target = link.getAttribute('data-target');
+                switchPage(target);
+                toggleMobileMenu(true); // Close menu on click
+            });
+        });
+
+        // Hide Tooltip Function
+        function hideCameraTooltip() {
+            if (!state.cameraInteracted) {
+                state.cameraInteracted = true;
+                camTooltip.style.opacity = '0';
+            }
+        }
+
+        // Interaction Listeners for Tooltip
+        canvasContainer.addEventListener('mousedown', () => {
+            if (!hud.classList.contains('collapsed')) {
+                toggleHud(false);
+            }
+            hideCameraTooltip();
+        });
+
+        canvasContainer.addEventListener('touchstart', () => {
+             hideCameraTooltip();
+        }, {passive: true});
+
+        function switchPage(page) {
+            sections.forEach(sec => sec.classList.remove('visible'));
+
+            if (page === 'home') {
+                const isMobile = window.innerWidth <= 768;
+                
+                // Lógica de Navegação Home Responsiva
+                if (isMobile) {
+                    toggleHud(false); // Mobile: Fecha HUD -> toggleHud vai mostrar o Pre-save
+                } else {
+                    toggleHud(true); // Desktop: Abre HUD e Pre-save (via toggleHud logic)
+                }
+                
+                hudToggleBtn.style.display = 'block';
+                canvasContainer.style.filter = 'blur(0px)';
+                
+                if (!state.cameraInteracted && state.introFinished) {
+                    camTooltip.style.opacity = '1';
+                }
+                
+                applyMuffle(false);
+            } else {
+                toggleHud(false); 
+                presavePopup.classList.remove('visible');
+                hudToggleBtn.style.display = 'none';
+                canvasContainer.style.filter = 'blur(5px) brightness(0.6)';
+                
+                camTooltip.style.opacity = '0';
+                
+                const targetSec = document.getElementById(`section-${page}`);
+                if (targetSec) targetSec.classList.add('visible');
+                applyMuffle(true);
+            }
+        }
+
+        // --- ÁUDIO DO SISTEMA ---
+        const bgMusic = new Audio('https://raw.githubusercontent.com/DezertHorse/cavalo/main/04%20nem%20querria%20ver%20o%20loop.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0; 
+        bgMusic.crossOrigin = "anonymous"; 
+        bgMusic.preservesPitch = false;
+
+        function log(msg) {
+            consoleLog.innerHTML = `> ${msg}<br>` + consoleLog.innerHTML;
+        }
+
+        // --- Configuração da Cena ---
+        const scene = new THREE.Scene();
+        const bgColor = new THREE.Color(0x2b1d14);
+        scene.background = bgColor;
+        scene.fog = new THREE.Fog(0x2b1d14, 15, 60);
+
+        const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(180, 80, 180); 
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio); 
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.BasicShadowMap;
+        canvasContainer.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 1.8;
+        controls.minDistance = 8;
+        controls.maxDistance = 200;
+        
+        const focusOffset = new THREE.Vector3(3.5, 1.2, 0);
+        controls.target.copy(focusOffset);
+        controls.enabled = false; 
+
+        // --- Luzes ---
+        const ambientLight = new THREE.AmbientLight(0x7a5c40, 1.2); 
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffeebb, 3.5);
+        dirLight.position.set(12, 15, 8);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        const rimLight = new THREE.DirectionalLight(0xffaa66, 1.5);
+        rimLight.position.set(-10, 4, -8);
+        scene.add(rimLight);
+
+        // --- Estrelas e Céu ---
+        function createStars() {
+            const starGeo = new THREE.BufferGeometry();
+            const starCount = 1500;
+            const posArray = new Float32Array(starCount * 3);
+            const sizesArray = new Float32Array(starCount);
+            const phasesArray = new Float32Array(starCount);
+
+            for(let i=0; i<starCount; i++) {
+                const r = 200 + Math.random() * 200;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos((Math.random() * 2) - 1);
+                
+                posArray[i*3] = r * Math.sin(phi) * Math.cos(theta);
+                posArray[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+                posArray[i*3+2] = r * Math.cos(phi);
+
+                sizesArray[i] = 1.0 + Math.random() * 2.0;
+                phasesArray[i] = Math.random() * Math.PI * 2;
+            }
+
+            starGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            starGeo.setAttribute('size', new THREE.BufferAttribute(sizesArray, 1));
+            starGeo.setAttribute('phase', new THREE.BufferAttribute(phasesArray, 1));
+
+            const starMat = new THREE.ShaderMaterial({
+                uniforms: {
+                    time: { value: 0 },
+                    color: { value: new THREE.Color(0xffeebb) }
+                },
+                vertexShader: `
+                    uniform float time;
+                    attribute float size;
+                    attribute float phase;
+                    void main() {
+                        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+                        float blink = 0.8 + 0.4 * sin(time * 3.0 + phase);
+                        gl_PointSize = size * blink * (300.0 / -mvPosition.z);
+                        gl_Position = projectionMatrix * mvPosition;
+                    }
+                `,
+                fragmentShader: `
+                    uniform vec3 color;
+                    void main() {
+                        if (length(gl_PointCoord - vec2(0.5, 0.5)) > 0.475) discard;
+                        gl_FragColor = vec4(color, 1.0);
+                    }
+                `,
+                transparent: true,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+
+            const stars = new THREE.Points(starGeo, starMat);
+            scene.add(stars);
+            return stars;
+        }
+
+        const stars = createStars();
+
+        // --- Estrelas Cadentes ---
+        const shootingStars = [];
+        const shootingStarGeo = new THREE.ConeGeometry(0.2, 8, 4);
+        shootingStarGeo.rotateX(Math.PI / 2);
+        const shootingStarMat = new THREE.MeshBasicMaterial({ 
+            color: 0xffffee, 
+            transparent: true, 
+            opacity: 0.8 
+        });
+
+        function spawnShootingStar() {
+            const mesh = new THREE.Mesh(shootingStarGeo, shootingStarMat);
+            const r = 150;
+            const theta = Math.random() * Math.PI * 2;
+            const phi = Math.random() * Math.PI * 0.4;
+            
+            mesh.position.set(
+                r * Math.sin(phi) * Math.cos(theta),
+                r * Math.cos(phi) + 20, 
+                r * Math.sin(phi) * Math.sin(theta)
+            );
+
+            const target = new THREE.Vector3(
+                (Math.random() - 0.5) * 100,
+                -50,
+                (Math.random() - 0.5) * 100
+            );
+            
+            mesh.lookAt(target);
+            const speed = 1.5 + Math.random() * 2.0;
+            scene.add(mesh);
+            shootingStars.push({ mesh, speed, life: 100 });
+        }
+
+        // --- Materiais ---
+        const envMap = new THREE.CubeTextureLoader()
+            .setPath( 'https://threejs.org/examples/textures/cube/SwedishRoyalCastle/' )
+            .load( [ 'px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg' ] );
+
+        // Material Detalhado - AJUSTADO PARA SER MAIS CLARO
+        const horseMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffeebb, 
+            roughness: 0.2, 
+            metalness: 0.5, 
+            envMap: envMap,
+            envMapIntensity: 1.2, 
+            vertexColors: true
+        });
+
+        const ghostMaterial = new THREE.MeshStandardMaterial({
+            color: 0xdcb386,
+            roughness: 0.1,
+            metalness: 0.9,
+            transparent: true,
+            opacity: 0.3,
+            envMap: envMap,
+            depthWrite: false
+        });
+
+        // Material Wireframe (Estrutura de Dados)
+        const wireMaterial = new THREE.MeshBasicMaterial({
+            color: 0xdcb386,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.0, 
+            depthTest: false, 
+            depthWrite: false
+        });
+
+        // --- Carregar Modelo GLTF ---
+        let horseModel, mixer, wireModel, camAnchor;
+
+        function loadHorse() {
+            const loader = new GLTFLoader();
+            loader.load('https://threejs.org/examples/models/gltf/Horse.glb', (gltf) => {
+                horseModel = gltf.scene.children[0];
+                horseModel.rotation.y = Math.PI / 2; 
+                horseModel.scale.set(0.025, 0.025, 0.025); 
+                horseModel.position.y = 0;
+                horseModel.material = horseMaterial;
+                horseModel.castShadow = true;
+                horseModel.receiveShadow = true;
+                scene.add(horseModel);
+
+                wireModel = horseModel.clone();
+                wireModel.material = wireMaterial;
+                wireModel.scale.set(0.0251, 0.0251, 0.0251); 
+                
+                // IMPORTANT: Ensure horse lines draw ON TOP of ground lines
+                wireModel.renderOrder = 10; 
+
+                scene.add(wireModel);
+
+                // Add Anchor for Camera Tooltip (Attached to horse)
+                camAnchor = new THREE.Object3D();
+                camAnchor.position.set(0, 100, 50); // Offset relative to horse center
+                horseModel.add(camAnchor);
+
+                mixer = new THREE.AnimationMixer(horseModel);
+                const action = mixer.clipAction(gltf.animations[0]);
+                action.timeScale = 1.0; 
+                action.play();
+
+                const wireMixer = new THREE.AnimationMixer(wireModel);
+                const wireAction = wireMixer.clipAction(gltf.animations[0]);
+                wireAction.timeScale = 1.0;
+                wireAction.play();
+                
+                mixer.wireMixer = wireMixer;
+
+                state.modelReady = true;
+            }, undefined, (error) => {
+                console.error(error);
+                loadingText.innerText = "ERRO NO CARREGAMENTO";
+            });
+        }
+
+        // --- Ambiente Chão/Pedras Variadas ---
+        const planeGeo = new THREE.PlaneGeometry(2000, 2000); 
+        const planeMat = new THREE.MeshStandardMaterial({ 
+            color: 0x5c3a21, 
+            roughness: 0.9 
+        });
+        const ground = new THREE.Mesh(planeGeo, planeMat);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = 0;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // Chão Wireframe (Estrutura de Dados)
+        const gridGeo = new THREE.PlaneGeometry(2000, 2000, 100, 100);
+        const groundWire = new THREE.Mesh(gridGeo, wireMaterial);
+        groundWire.rotation.x = -Math.PI / 2;
+        groundWire.position.y = 0.1; 
+        
+        // IMPORTANT: Ensure ground lines draw BEHIND horse lines
+        groundWire.renderOrder = 1;
+
+        scene.add(groundWire);
+
+        const desertGroup = new THREE.Group();
+        scene.add(desertGroup);
+
+        // Pedras Tipo A (Dodecaedro)
+        const rockGeo = new THREE.DodecahedronGeometry(0.7, 0);
+        const rockMat = new THREE.MeshStandardMaterial({ color: 0x3d2614, roughness: 0.8 });
+        const rockMesh = new THREE.InstancedMesh(rockGeo, rockMat, 250); 
+        rockMesh.receiveShadow = true;
+        rockMesh.castShadow = true;
+        desertGroup.add(rockMesh);
+
+        const dummy = new THREE.Object3D();
+        
+        for (let i = 0; i < 250; i++) {
+            dummy.position.set(
+                (Math.random() * 1000) - 200, 
+                0.2, 
+                (Math.random() - 0.5) * 300 
+            );
+            const s = 0.2 + Math.random() * 1.5;
+            dummy.scale.set(s, s * (0.5 + Math.random()), s);
+            dummy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+            dummy.updateMatrix();
+            rockMesh.setMatrixAt(i, dummy.matrix);
+        }
+
+        // --- Lógica de Carregamento ---
+        const loadingTerms = [
+            "CALIBRANDO CASCOS...",
+            "SINTETIZANDO CRINA...",
+            "ALINHANDO VÉRTEBRAS...",
+            "CARREGANDO MATRIZ ÓSSEA...",
+            "POLINDO TEXTURAS...",
+            "OTIMIZANDO GALOPE...",
+            "SINCRONIZANDO TROTE...",
+            "INJETANDO ALGORITMOS...",
+            "RENDERIZANDO DESERTO..."
+        ];
+
+        function simulateLoading() {
+            loadHorse();
+            let progress = 0;
+            let termIndex = 0;
+            
+            const interval = setInterval(() => {
+                if (progress < 90) progress += Math.random() * 2;
+                if (state.modelReady && progress >= 90) progress = 100;
+
+                if (Math.floor(progress) % 15 === 0) {
+                    termIndex = (termIndex + 1) % loadingTerms.length;
+                    loadingText.innerText = loadingTerms[termIndex];
+                }
+
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    finishLoading();
+                }
+                progressFill.style.width = `${progress}%`;
+            }, 50);
+        }
+
+        function finishLoading() {
+            loadingText.innerText = "SISTEMA PRONTO";
+            progressContainer.style.display = 'none';
+            startBtn.style.display = 'block';
+        }
+
+        function startSystem() {
+            initAudio();
+
+            bgMusic.play().then(() => {
+                console.log("Audio iniciado");
+                let vol = 0;
+                const targetVol = 0.5;
+                const fadeDuration = 2500;
+                const fadeStep = 0.02;
+                const fadeInterval = setInterval(() => {
+                    if (vol < targetVol) {
+                        vol += fadeStep;
+                        if (vol > targetVol) vol = targetVol;
+                        bgMusic.volume = vol;
+                    } else {
+                        clearInterval(fadeInterval);
+                    }
+                }, fadeDuration * (fadeStep / targetVol));
+            }).catch(e => console.error("Erro audio", e));
+
+            loadingScreen.style.opacity = 0;
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                startIntro();
+            }, 1000);
+        }
+
+        startBtn.addEventListener('click', startSystem);
+
+        function startIntro() {
+            state.loaded = true;
+        }
+
+        // --- INTERAÇÃO HUD ---
+        const speedSlider = document.getElementById('speed-slider');
+        const structureSlider = document.getElementById('structure-slider'); 
+        const stretchSlider = document.getElementById('stretch-slider'); 
+        const fovSlider = document.getElementById('fov-slider');
+        const ghostBtn = document.getElementById('ghost-btn');
+        const speedVal = document.getElementById('speed-val');
+
+        hudToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleHud(true);
+        });
+
+        closeHudBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleHud(false);
+        });
+
+        canvasContainer.addEventListener('mousedown', () => {
+            if (!hud.classList.contains('collapsed')) {
+                toggleHud(false);
+            }
+        });
+
+        hud.addEventListener('mousedown', (e) => e.stopPropagation());
+
+        // 1. VELOCIDADE
+        speedSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            state.speed = state.baseSpeed * (val / 100);
+            speedVal.innerText = `${val}%`;
+            
+            const visualRate = (val / 100) * 2.0; 
+            if (mixer) {
+                mixer.timeScale = visualRate;
+                if(mixer.wireMixer) mixer.wireMixer.timeScale = visualRate;
+            }
+
+            const audioRate = val / 100;
+            bgMusic.playbackRate = audioRate <= 0.1 ? 0.1 : audioRate; 
+        });
+
+        // 2. ESTRUTURA (WIREFRAME)
+        structureSlider.addEventListener('input', (e) => {
+            state.structureInteracted = true;
+            state.structure = parseInt(e.target.value) / 100;
+            wireMaterial.opacity = state.structure;
+        });
+
+        // 3. ALONGAMENTO (Overdrive)
+        stretchSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            state.stretch = val / 100;
+            updateOverdrive();
+        });
+
+        // 4. FOV (Campo de Visão + Audio Filter)
+        fovSlider.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            camera.fov = val;
+            camera.updateProjectionMatrix();
+            // Update audio filter based on FOV
+            updateFovAudio(val);
+        });
+
+        ghostBtn.addEventListener('click', () => {
+            state.ghostMode = !state.ghostMode;
+            
+            if (state.ghostMode) {
+                ghostBtn.innerText = "MODO ESPECTRO [ON]";
+                ghostBtn.classList.add('active');
+                if(horseModel) horseModel.material = ghostMaterial;
+                log("MATERIAL: ETÉREO");
+            } else {
+                ghostBtn.innerText = "MODO ESPECTRO [OFF]";
+                ghostBtn.classList.remove('active');
+                if(horseModel) {
+                    horseModel.material = horseMaterial;
+                }
+                log("MATERIAL: SÓLIDO");
+            }
+        });
+
+        // --- ANIMAÇÃO ---
+        const clock = new THREE.Clock();
+        const targetCamPos = new THREE.Vector3(16, 5, 16); 
+        const tempV = new THREE.Vector3();
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const delta = clock.getDelta();
+            state.time += delta; 
+            
+            if(mixer) {
+                mixer.update(delta);
+                if(mixer.wireMixer) mixer.wireMixer.update(delta);
+            }
+
+            // Auto-animate structure slider
+            if (!state.structureInteracted) {
+                const cycleDuration = 6.0;
+                const pauseDuration = 2.0; 
+                const localTime = state.time % cycleDuration;
+                let osc = 0;
+
+                if (localTime > pauseDuration) {
+                    const activeTime = localTime - pauseDuration;
+                    const activeDuration = cycleDuration - pauseDuration;
+                    osc = Math.sin((activeTime / activeDuration) * Math.PI);
+                } else {
+                    osc = 0;
+                }
+
+                state.structure = osc;
+                wireMaterial.opacity = osc;
+                structureSlider.value = Math.floor(osc * 100);
+            }
+
+            // Estrelas
+            stars.material.uniforms.time.value = clock.getElapsedTime();
+
+            // Estrelas Cadentes
+            if (Math.random() > 0.98) spawnShootingStar();
+            for (let i = shootingStars.length - 1; i >= 0; i--) {
+                const s = shootingStars[i];
+                s.mesh.translateZ(s.speed); 
+                s.life--;
+                s.mesh.material.opacity = s.life / 100 * 0.8;
+                if (s.life <= 0) {
+                    scene.remove(s.mesh);
+                    shootingStars.splice(i, 1);
+                }
+            }
+
+            // Intro Zoom
+            if (state.loaded && !state.introFinished) {
+                camera.position.lerp(targetCamPos, delta * 1.5);
+                camera.lookAt(focusOffset);
+                if (camera.position.distanceTo(targetCamPos) < 1.0) {
+                    state.introFinished = true;
+                    controls.enabled = true; 
+                    
+                    // Responsive Initial State
+                    if (window.innerWidth > 768) {
+                        toggleHud(true); // Desktop: Open HUD
+                    } else {
+                        toggleHud(false); // Mobile: Keep HUD closed to show Pre-save cleanly
+                    }
+                    
+                    // Exibe Pre-save com delay se estiver no Desktop ou se HUD estiver fechado
+                    if (hud.classList.contains('collapsed')) {
+                         setTimeout(() => presavePopup.classList.add('visible'), 500);
+                    } else {
+                         // Se HUD abriu (Desktop), garante que o pre-save apareça também
+                         setTimeout(() => presavePopup.classList.add('visible'), 500);
+                    }
+                    
+                    // Show Tooltip after intro ONLY IF NOT INTERACTED
+                    if (!state.cameraInteracted) {
+                        camTooltip.style.opacity = '1';
+                    }
+                    log("SISTEMA ONLINE");
+                }
+            }
+
+            // --- Manipulação do Modelo GLTF ---
+            if (horseModel) {
+                const stretch = state.stretch;
+                const baseScale = 0.025;
+                
+                const scaleY = baseScale * (1 + stretch * 3.0);
+                const scaleXZ = baseScale * (1 - stretch * 0.4); 
+                
+                horseModel.scale.set(scaleXZ, scaleY, scaleXZ);
+                
+                if(wireModel) {
+                    wireModel.scale.set(scaleXZ, scaleY, scaleXZ);
+                }
+
+                // Update Camera Tooltip Position
+                if (camAnchor && state.introFinished) {
+                    camAnchor.getWorldPosition(tempV);
+                    tempV.project(camera);
+
+                    const x = (tempV.x * .5 + .5) * canvasContainer.clientWidth;
+                    const y = (tempV.y * -.5 + .5) * canvasContainer.clientHeight;
+
+                    if (Math.abs(tempV.z) > 1 || x < 0 || x > canvasContainer.clientWidth || y < 0 || y > canvasContainer.clientHeight) {
+                        camTooltip.style.display = 'none';
+                    } else {
+                        camTooltip.style.display = 'flex';
+                        camTooltip.style.left = `${x}px`;
+                        camTooltip.style.top = `${y}px`;
+                    }
+                }
+            }
+
+            // Mover Pedras
+            desertGroup.position.x -= (state.speed / 80); 
+            if (desertGroup.position.x < -600) desertGroup.position.x = 0; 
+
+            // Mover Grid
+            const cellSize = 20;
+            groundWire.position.x = (desertGroup.position.x % cellSize);
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        simulateLoading();
+        animate();
+
+    </script>
+</body>
+</html>
