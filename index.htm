@@ -246,10 +246,11 @@
         /* Fotos */
         .photo-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             max-width: 1200px;
             margin: 0 auto;
+            padding-bottom: 40px;
         }
 
         .photo-card {
@@ -294,7 +295,7 @@
             align-items: center;
             opacity: 0;
             transition: opacity 0.3s;
-            cursor: zoom-out;
+            cursor: default;
         }
 
         #lightbox.active {
@@ -302,12 +303,69 @@
             opacity: 1;
         }
 
-        #lightbox img {
+        .lightbox-content {
+            position: relative;
             max-width: 90%;
             max-height: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #lightbox-img {
+            max-width: 100%;
+            max-height: 80vh;
             border: 2px solid #dcb386;
             box-shadow: 0 0 30px rgba(220, 179, 134, 0.3);
         }
+
+        #lightbox-caption {
+            margin-top: 15px;
+            color: #dcb386;
+            font-size: 18px;
+            text-transform: uppercase;
+            text-align: center;
+            letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 15px;
+            border: 1px dashed #dcb386;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: #dcb386;
+            border: 1px solid #dcb386;
+            font-size: 30px;
+            padding: 10px 15px;
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s;
+        }
+
+        .lightbox-nav:hover {
+            background: #dcb386;
+            color: #150d05;
+        }
+
+        .lightbox-nav.prev { left: 20px; }
+        .lightbox-nav.next { right: 20px; }
+
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: none;
+            border: none;
+            color: #dcb386;
+            font-size: 40px;
+            cursor: pointer;
+            z-index: 1002;
+        }
+        
+        .lightbox-close:hover { color: #ff4400; }
 
         /* Links */
         .links-container {
@@ -907,7 +965,7 @@
             <a class="nav-item" data-target="fotos">FOTOS</a>
             <a class="nav-item" data-target="links">LINKS</a>
             <a class="nav-item" data-target="letras">LETRAS</a>
-            <a class="nav-item" href="https://tratore.ffm.to/dzrthrs3s1" target="_blank">OUÇA AGORA</a>
+            <a class="nav-item" href="http://tratore.ffm.to/dzrthrs3" target="_blank">PRÉ SAVE</a>
         </div>
     </nav>
 
@@ -926,17 +984,17 @@
 
     <!-- POPUP PRE-SAVE (Home Only) -->
     <div id="presave-popup">
-        <div class="presave-sign-badge">NO AR</div>
-        <div class="presave-title">JÁ DISPONÍVEL</div>
+        <div class="presave-sign-badge">PRE-SAVE</div>
+        <div class="presave-title">NOVA TRANSMISSÃO</div>
         <div class="presave-desc">
             ARTISTA: DEZERT HORSE<br>
             FAIXA: NEM QUERIA VER O FIM<br>
-            OUÇA AGORA
+            FAÇA O PRÉ SAVE
         </div>
-        <a href="https://tratore.ffm.to/dzrthrs3s1" target="_blank" class="presave-btn">
-            OUÇA AGORA
+        <a href="http://tratore.ffm.to/dzrthrs3" target="_blank" class="presave-btn">
+            PRÉ SAVE
         </a>
-        <a href="https://youtu.be/1mXGEhiQWaw" target="_blank" class="presave-btn">
+        <a href="https://www.youtube.com/@dezerthorse" target="_blank" class="presave-btn">
             ASSISTIR CLIPE
         </a>
     </div>
@@ -949,31 +1007,20 @@
     <!-- SEÇÃO FOTOS -->
     <div id="section-fotos" class="page-section">
         <h1 class="section-title">ARQUIVOS VISUAIS</h1>
-        <div class="photo-grid">
-            <div class="photo-card" onclick="openLightbox(this)">
-                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6248.JPG" alt="Gallery Image 1">
-            </div>
-            <div class="photo-card" onclick="openLightbox(this)">
-                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6258.JPG" alt="Gallery Image 2">
-            </div>
-            <div class="photo-card" onclick="openLightbox(this)">
-                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6265.JPG" alt="Gallery Image 3">
-            </div>
-            <div class="photo-card" onclick="openLightbox(this)">
-                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6263.JPG" alt="Gallery Image 4">
-            </div>
-            <div class="photo-card" onclick="openLightbox(this)">
-                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6252%20(2).JPG" alt="Gallery Image 5">
-            </div>
-            <div class="photo-card" onclick="openLightbox(this)">
-                <img src="https://raw.githubusercontent.com/DezertHorse/cavalo/main/1.JPG" alt="Gallery Image 6">
-            </div>
+        <div class="photo-grid" id="photo-grid-container">
+            <!-- Photos will be injected here by JS -->
         </div>
     </div>
 
     <!-- LIGHTBOX -->
-    <div id="lightbox" onclick="closeLightbox()">
-        <img id="lightbox-img" src="" alt="Full Screen Image">
+    <div id="lightbox">
+        <button class="lightbox-close" onclick="closeLightbox()">×</button>
+        <button class="lightbox-nav prev" onclick="changeSlide(-1)">&#10094;</button>
+        <div class="lightbox-content">
+            <img id="lightbox-img" src="" alt="Full Screen Image">
+            <div id="lightbox-caption"></div>
+        </div>
+        <button class="lightbox-nav next" onclick="changeSlide(1)">&#10095;</button>
     </div>
 
     <!-- SEÇÃO LINKS -->
@@ -1015,7 +1062,7 @@
             </details>
 
             <details class="song-block">
-                <summary>02 ONTEM FT GANWALK (DEMO)</summary>
+                <summary>02 ONTEM FT GANWALK</summary>
                 <div class="song-lyrics">
                     ontem eu pensava que o tempo não ia passar
                     que cada momento era eterno, mil segundos pelo ar
@@ -1267,7 +1314,7 @@
     <!-- HUD INTERATIVO (Home Only) -->
     <div id="hud" class="collapsed">
         <div class="hud-header">
-            <h2>Painel de Controle</h2>
+            <h2>Painel de Controlo</h2>
             <button class="close-btn" id="close-hud-btn">×</button>
         </div>
         
@@ -1292,7 +1339,7 @@
         </div>
 
         <div class="control-group">
-            <button id="ghost-btn" class="control-btn">MODO ESPECTRO [OFF]</button>
+            <button id="ghost-btn" class="control-btn active">MODO ESPECTRO [ON]</button>
         </div>
 
         <div class="data-stream" id="console-log">
@@ -1320,7 +1367,7 @@
             speed: 32,
             baseSpeed: 32,
             stretch: 0, 
-            ghostMode: false, 
+            ghostMode: true, // Default to true
             structure: 0.0, // Wireframe Opacity & Expansion
             structureInteracted: false,
             cameraInteracted: false, // Flag para controle da tooltip
@@ -1329,6 +1376,47 @@
             introFinished: false,
             modelReady: false
         };
+
+        // --- Gallery Data ---
+        const galleryImages = [
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/2%20-%20Saturar%20(1).jpg', credit: 'Foto por Caeu Santo e Isabela Izarias' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_cavalo.JPG', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6276.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6249.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6251.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6253.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6256.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6258%202.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6260.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6263%202.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6265%202.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6267.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6271.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6273.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6276.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6277.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6278.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6280.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6281.jpg', credit: 'Foto por Caeu Santo' },
+            { url: 'https://raw.githubusercontent.com/DezertHorse/cavalo/main/IMG_6283.jpg', credit: 'Foto por Caeu Santo' }
+        ];
+
+        // Populate Gallery
+        const photoGridContainer = document.getElementById('photo-grid-container');
+        galleryImages.forEach((imgData, index) => {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            card.setAttribute('data-index', index);
+            card.setAttribute('data-credit', imgData.credit);
+            card.onclick = function() { openLightbox(this); };
+            
+            const img = document.createElement('img');
+            img.src = imgData.url;
+            img.alt = `Gallery Image ${index + 1}`;
+            
+            card.appendChild(img);
+            photoGridContainer.appendChild(card);
+        });
 
         // --- DOM Elements ---
         const loadingScreen = document.getElementById('loading-screen');
@@ -1353,11 +1441,14 @@
         const mobileCloseBtn = document.getElementById('mobile-close-btn');
 
         // Lightbox Logic
+        let currentLightboxIndex = 0;
+
         window.openLightbox = function(card) {
-            const imgSrc = card.querySelector('img').src;
+            const index = parseInt(card.getAttribute('data-index'));
+            currentLightboxIndex = index;
+            updateLightboxContent();
+            
             const lightbox = document.getElementById('lightbox');
-            const lightboxImg = document.getElementById('lightbox-img');
-            lightboxImg.src = imgSrc;
             lightbox.classList.add('active');
         };
 
@@ -1365,6 +1456,25 @@
             const lightbox = document.getElementById('lightbox');
             lightbox.classList.remove('active');
         };
+
+        window.changeSlide = function(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex >= galleryImages.length) {
+                currentLightboxIndex = 0;
+            } else if (currentLightboxIndex < 0) {
+                currentLightboxIndex = galleryImages.length - 1;
+            }
+            updateLightboxContent();
+        };
+
+        function updateLightboxContent() {
+            const imgData = galleryImages[currentLightboxIndex];
+            const lightboxImg = document.getElementById('lightbox-img');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            
+            lightboxImg.src = imgData.url;
+            lightboxCaption.innerText = imgData.credit;
+        }
 
         // --- NAVEGAÇÃO SPA & FILTRO DE AUDIO ---
         // Audio Filter State
@@ -1814,7 +1924,10 @@
                 horseModel.rotation.y = Math.PI / 2; 
                 horseModel.scale.set(0.025, 0.025, 0.025); 
                 horseModel.position.y = 0;
-                horseModel.material = horseMaterial;
+                
+                // Initial material check based on default state
+                horseModel.material = state.ghostMode ? ghostMaterial : horseMaterial;
+                
                 horseModel.castShadow = true;
                 horseModel.receiveShadow = true;
                 scene.add(horseModel);
@@ -2198,5 +2311,3 @@
     </script>
 </body>
 </html>
-
-
